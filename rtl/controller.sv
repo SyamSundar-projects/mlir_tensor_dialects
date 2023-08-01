@@ -22,7 +22,7 @@ destination address	        11	            106	            96
 input element size	         3	            109	            107
 output element size	         3	            112	            110
 */
-module tensor_config_ctrl(
+module controller(
     input clock,
     input reset_n,
     input [117:0] config_in_tdata,
@@ -33,15 +33,6 @@ module tensor_config_ctrl(
     input bicast_out_tredy
 );
 
-reg rd_done;
-
-typedef enum reg [0:0] {
-    RD_CONFIG = 1'b0;
-    WR_DATA   = 1'b0;
-} fsm_state_t;
-
-fsm_state_t state,next_state;
-
 typedef struct packed {
     reg [4:0]   operator;
     reg [4:0]   sub_field_op;
@@ -51,8 +42,11 @@ typedef struct packed {
     reg [10:0]  dstn_addr;
     reg [2:0]   in_size;
     reg [2:0]   out_size;
-} rd_config;
+} config_struct;
 
+config_struct rd_config;
+
+reg state,next_state;
 
 // Register Config
 always @(posedge clock) begin
@@ -65,22 +59,22 @@ always @(posedge clock) begin
 end
 
 always @(posedge clock) begin
-    if (!reset_n) state <= RD_CONFIG;
+    if (!reset_n) state <= 0;
     else state <= next_state;
 end
 
 always_comb begin
     case (state)
-        RD_CONFIG:  if(config_in_tvalid) next_state = WR_DATA;
-                    else next_state = RD_CONFIG;
-        WR_DATA:    if (bicast_out_tredy & rd_config.operator)   next_state = RD_CONFIG;
-                    else next_state = WR_DATA;
-        default: next_state = RD_CONFIG;
+        0:  if(config_in_tvalid) next_state = 1;
+                    else next_state = 0;
+        1:  if (bicast_out_tredy & (rd_config.operator==0))   next_state = 0;
+                    else next_state = 1;
+        default: next_state = 0;
     endcase
 end
 
 always @(posedge clock) begin
-    if (state == WR_DATA) begin
+    if (state == 1) begin
         case (rd_config.operator)
             0: if (bicast_out_tredy) begin
                     bitcast_out_tdata  <= {rd_config.sub_field_op,rd_config.src_dim,rd_config.dstn_dim,
@@ -95,7 +89,7 @@ always @(posedge clock) begin
     end
 end
 
-assign config_in_tready = state == RD_DATA;
+assign config_in_tready = state == 0;
 
 endmodule
 
