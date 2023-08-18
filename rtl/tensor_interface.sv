@@ -2,46 +2,46 @@
 config is divided into
     config_data[106:0]	        bitwidth	to	from
     read_en,write_en	        2	        106	105
-    operation	                3	        104	102
+    element_size	            3	        104	102
     rd_base_addr	            11	        101	91
     rd_dimensions(#of bytes)	40	        90	51
     wr_base_addr	            11	        50	40
     wr_dimensions	            40	        39	0
 */
 module tensor_interface(
-    input         clock,
-    input         reset_n,
+    input               clock,
+    input               reset_n,
     // config
-    input [106:0] config_in_tdata,
-    input         config_in_tvalid,
-    output        config_in_tready,
+input [106:0]           config_in_tdata,
+    input               config_in_tvalid,
+    output              config_in_tready,
     // read address
-    output [15:0] ar_addr,
-    output        ar_valid,
-    input         ar_ready,
+    output reg [15:0]   ar_addr,
+    output reg          ar_valid,
+input                   ar_ready,
     // read data
-    input [31:0]  r_data,
-    input         r_last,
-    input         r_valid,
-    output        r_ready,
+    input [31:0]        r_data,
+    input               r_last,
+    input               r_valid,
+    output              r_ready,
     // write address
-    output [15:0] aw_addr,
-    output        aw_valid,
-    input         aw_ready,   
+    output reg [15:0]   aw_addr,
+    output reg          aw_valid,
+    input               aw_ready,   
     // write data
-    output [31:0] w_data,
-    output        w_last,
-    output        w_valid,
-    input         w_ready,
+    output reg [31:0]   w_data,
+    output reg          w_last,
+    output reg          w_valid,
+    input               w_ready,
     // write response
-    input         b_resp,
-    input         b_valid,
-    output        b_ready,
+    input               b_resp,
+    input               b_valid,
+    output              b_ready,
     // output 
-    output [31:0] out_data,
-    output        out_last,
-    output        out_valid,
-    input         out_ready        
+    output reg [31:0]   out_data,
+    output reg          out_last,
+    output reg          out_valid,
+    input               out_ready        
 );
 
 reg [2:0] state,next_state;
@@ -122,7 +122,7 @@ always @(*) begin
             else next_state = 3;
         4:  if(w_ready && wr_addr_count == no_of_wr-1) next_state = 5;
             else next_state = 4;
-        5:  if(b_valid && b_resp) next_state = 0
+        5:  if(b_valid && b_resp) next_state = 0;
             else next_state = 5;
         default: next_state = 0;
     endcase
