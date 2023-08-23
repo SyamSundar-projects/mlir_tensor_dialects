@@ -92,4 +92,3 @@ end
 assign config_in_tready = state == 0;
 
 endmodule
-

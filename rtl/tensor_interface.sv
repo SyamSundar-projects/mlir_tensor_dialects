@@ -117,7 +117,7 @@ always @(*) begin
         2:  if (r_valid && r_last) 
                 if (rd_wr==3) next_state = 3;
                 else next_state = 0;
-            else next_state = 0;
+            else next_state = 2;
         3:  if(aw_ready) next_state = 4;
             else next_state = 3;
         4:  if(w_ready && wr_addr_count == no_of_wr-1) next_state = 5;
